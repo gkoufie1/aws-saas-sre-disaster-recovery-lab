@@ -1,0 +1,63 @@
+# kube-prometheus-stack tuned for a 3-node kind cluster.
+# Grafana admin password is passed at install time by lab.py, not stored here.
+
+# kind does not expose these control-plane endpoints to scraping; leaving
+# them on only produces permanently-firing "target down" noise.
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30090
+  prometheusSpec:
+    # Pick up ServiceMonitors / rules from every namespace, not just ones
+    # carrying this Helm release's labels.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+    retention: 7d
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { memory: 1536Mi }
+    nodeSelector: { node-role.kubernetes.io/control-plane: "" }
+    tolerations:
+      - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }
+
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector: { node-role.kubernetes.io/control-plane: "" }
+    tolerations:
+      - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }
+
+grafana:
+  service:
+    type: NodePort
+    nodePort: 30300
+  nodeSelector: { node-role.kubernetes.io/control-plane: "" }
+  tolerations:
+    - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }
+  grafana.ini:
+    auth.anonymous:
+      enabled: true
+      org_role: Viewer
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: ALL
+
+# Observability runs on the control-plane node, like the database and the
+# synthetic client, so worker-node failure drills do not blind the monitors.
+prometheusOperator:
+  nodeSelector: { node-role.kubernetes.io/control-plane: "" }
+  tolerations:
+    - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }
+kube-state-metrics:
+  nodeSelector: { node-role.kubernetes.io/control-plane: "" }
+  tolerations:
+    - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: datareliability-observability
+description: SLO recording rules, burn-rate alerts and Grafana dashboard for the DataReliability lab
+type: application
+version: 1.0.0

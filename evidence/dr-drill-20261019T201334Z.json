@@ -1,0 +1,800 @@
+{
+  "scenario": "dr-drill",
+  "title": "Database volume loss and restore from backup",
+  "started": "2026-10-19T20:13:34.702Z",
+  "events": [
+    {
+      "t": "2026-10-19T20:13:34.702Z",
+      "offset_s": 0.0,
+      "event": "steady state confirmed",
+      "already_firing": [
+        "APIAvailabilitySlowBurn",
+        "PostgresBackupJobFailed"
+      ]
+    },
+    {
+      "t": "2026-10-19T20:13:36.601Z",
+      "offset_s": 1.9,
+      "event": "pre-disaster state recorded",
+      "latest_backup": "20261019T201000Z.dump",
+      "stats": {
+        "customers": 1008401,
+        "max_id": 1008402,
+        "newest_record_at": "2026-10-19T20:13:36.020018+00:00"
+      }
+    },
+    {
+      "t": "2026-10-19T20:13:36.601Z",
+      "offset_s": 1.9,
+      "event": "DISASTER: PostgreSQL StatefulSet and data volume deleted"
+    },
+    {
+      "t": "2026-10-19T20:14:22.695Z",
+      "offset_s": 48.0,
+      "event": "alert firing: APIAvailabilityFastBurn"
+    },
+    {
+      "t": "2026-10-19T20:14:22.848Z",
+      "offset_s": 48.1,
+      "event": "runbook step 1: stop writes - scale API to 0 so nothing writes to an empty database"
+    },
+    {
+      "t": "2026-10-19T20:14:23.212Z",
+      "offset_s": 48.5,
+      "event": "runbook step 2: recreate empty PostgreSQL on a new volume"
+    },
+    {
+      "t": "2026-10-19T20:14:35.564Z",
+      "offset_s": 60.9,
+      "event": "runbook step 3: restore newest backup from object storage",
+      "key": "20261019T201000Z.dump"
+    },
+    {
+      "t": "2026-10-19T20:14:52.756Z",
+      "offset_s": 78.1,
+      "event": "restore job complete",
+      "log": "{\"event\":\"restore_complete\",\"key\":\"postgres/customers/20261019T201000Z.dump\",\"seconds\":12}"
+    },
+    {
+      "t": "2026-10-19T20:14:53.195Z",
+      "offset_s": 78.5,
+      "event": "restored data inspected",
+      "records": 1007762,
+      "max_id": 1007763,
+      "newest_record_at": "2026-10-19T20:10:00.935Z"
+    },
+    {
+      "t": "2026-10-19T20:14:53.195Z",
+      "offset_s": 78.5,
+      "event": "runbook step 4: restart API and synthetic traffic"
+    },
+    {
+      "t": "2026-10-19T20:15:08.845Z",
+      "offset_s": 94.1,
+      "event": "recovered: 10 consecutive successful probe write+read cycles"
+    }
+  ],
+  "alerts_first_firing": {
+    "APIAvailabilitySlowBurn": "before-injection",
+    "PostgresBackupJobFailed": "before-injection",
+    "APIAvailabilityFastBurn": "2026-10-19T20:14:22.695Z"
+  },
+  "probe_summary": {
+    "samples": 86,
+    "failed": 74,
+    "slow_over_600ms": 0,
+    "first_failure": "2026-10-19T20:13:37.685Z",
+    "last_failure": "2026-10-19T20:14:57.764Z",
+    "failure_details": [
+      "ConnectionAbortedError",
+      "HTTP 503",
+      "RemoteDisconnected",
+      "TimeoutError"
+    ],
+    "max_ms": 2023
+  },
+  "probe_samples": [
+    {
+      "t": "2026-10-19T20:13:04.697Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:05.721Z",
+      "ok": true,
+      "ms": 20,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:06.748Z",
+      "ok": true,
+      "ms": 20,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:07.774Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:08.805Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:09.834Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:10.858Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:11.887Z",
+      "ok": true,
+      "ms": 39,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:12.930Z",
+      "ok": true,
+      "ms": 35,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:13.970Z",
+      "ok": true,
+      "ms": 41,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:15.026Z",
+      "ok": true,
+      "ms": 37,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:16.067Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:17.092Z",
+      "ok": true,
+      "ms": 36,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:18.137Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:19.157Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:20.181Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:21.206Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:22.230Z",
+      "ok": true,
+      "ms": 40,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:23.274Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:24.312Z",
+      "ok": true,
+      "ms": 33,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:25.349Z",
+      "ok": true,
+      "ms": 21,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:26.372Z",
+      "ok": true,
+      "ms": 13,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:27.390Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:28.412Z",
+      "ok": true,
+      "ms": 21,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:29.436Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:30.464Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:31.488Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:32.513Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:33.538Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:34.563Z",
+      "ok": true,
+      "ms": 31,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:35.603Z",
+      "ok": true,
+      "ms": 50,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:36.662Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:13:37.685Z",
+      "ok": false,
+      "ms": 10,
+      "detail": "HTTP 503"
+    },
+    {
+      "t": "2026-10-19T20:13:38.710Z",
+      "ok": false,
+      "ms": 2008,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:13:41.727Z",
+      "ok": false,
+      "ms": 2017,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:13:44.757Z",
+      "ok": false,
+      "ms": 2023,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:13:47.785Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:48.793Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:49.811Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:50.822Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:51.835Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:52.844Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:53.855Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:54.863Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:55.873Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:56.877Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:57.886Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:58.905Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:13:59.922Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:00.935Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:01.952Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:02.966Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:03.974Z",
+      "ok": false,
+      "ms": 9,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:04.988Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:05.997Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:07.009Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:08.013Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:09.038Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:10.051Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:11.077Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:12.102Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:13.111Z",
+      "ok": false,
+      "ms": 8,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:14.133Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:15.158Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:16.166Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:17.176Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:18.187Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:19.201Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:20.218Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "ConnectionAbortedError"
+    },
+    {
+      "t": "2026-10-19T20:14:21.248Z",
+      "ok": false,
+      "ms": 6,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:22.260Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:23.270Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:24.278Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:25.290Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:26.316Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:27.324Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:28.333Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:29.350Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:30.359Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:31.370Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:32.400Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:33.413Z",
+      "ok": false,
+      "ms": 9,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:34.436Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:35.441Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:36.452Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:37.458Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:38.479Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:39.490Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:40.497Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:41.504Z",
+      "ok": false,
+      "ms": 6,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:42.515Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:43.523Z",
+      "ok": false,
+      "ms": 69,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:44.597Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:45.610Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:46.619Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:47.645Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:48.660Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:49.670Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:50.681Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:51.692Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:52.705Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:53.718Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:54.727Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:55.744Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:56.756Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:57.764Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:14:58.774Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:14:59.797Z",
+      "ok": true,
+      "ms": 27,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:00.832Z",
+      "ok": true,
+      "ms": 25,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:01.862Z",
+      "ok": true,
+      "ms": 64,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:02.932Z",
+      "ok": true,
+      "ms": 41,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:03.980Z",
+      "ok": true,
+      "ms": 150,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:05.138Z",
+      "ok": true,
+      "ms": 129,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:06.275Z",
+      "ok": true,
+      "ms": 105,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:07.383Z",
+      "ok": true,
+      "ms": 84,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:15:08.476Z",
+      "ok": true,
+      "ms": 92,
+      "detail": "201/200"
+    }
+  ],
+  "diagnostics": {
+    "backups_before": "2026-10-19 15:55:10   33122487 20261019T195501Z.dump\n2026-10-19 16:00:02          0 20261019T200000Z.dump\n2026-10-19 16:00:15          0 20261019T200013Z.dump\n2026-10-19 16:05:09   33171637 20261019T200501Z.dump\n2026-10-19 16:10:06   33209174 20261019T201000Z.dump",
+    "pods_during_outage": "NAME                                   READY   STATUS      RESTARTS   AGE     IP            NODE                            NOMINATED NODE   READINESS GATES\ndatareliability-api-7c8f88b887-2qhmt   0/1     Running     0          108s    10.244.2.27   datareliability-worker          <none>           <none>\ndatareliability-api-7c8f88b887-v7bxq   0/1     Running     0          13m     10.244.2.25   datareliability-worker          <none>           <none>\nloadgen-745d6d465c-gdnss               1/1     Running     0          68m     10.244.0.12   datareliability-control-plane   <none>           <none>\npostgres-backup-29873995-c92bh         0/1     Completed   0          19m     10.244.2.22   datareliability-worker          <none>           <none>\npostgres-backup-29874000-68tdc         0/1     Error       0          14m     10.244.2.24   datareliability-worker          <none>           <none>\npostgres-backup-29874000-jnwx4         0/1     Error       0          14m     10.244.2.23   datareliability-worker          <none>           <none>\npostgres-backup-29874010-c4jm5         0/1     Completed   0          4m22s   10.244.2.26   datareliability-worker          <none>           <none>",
+    "restore_log": "{\"event\":\"restore_complete\",\"key\":\"postgres/customers/20261019T201000Z.dump\",\"seconds\":12}",
+    "result": "{\n  \"rto_target_s\": 900,\n  \"rto_measured_s\": 92.2,\n  \"rto_met\": true,\n  \"rpo_target_s\": 300,\n  \"rpo_measured_s\": 215.7,\n  \"rpo_met\": true,\n  \"records_before\": 1008401,\n  \"max_id_before\": 1008402,\n  \"records_after_restore\": 1007762,\n  \"max_id_after_restore\": 1007763,\n  \"records_lost\": 639,\n  \"newest_record_after_restore\": \"2026-10-19T20:10:00.935Z\",\n  \"restored_from\": \"20261019T201000Z.dump\"\n}"
+  }
+}

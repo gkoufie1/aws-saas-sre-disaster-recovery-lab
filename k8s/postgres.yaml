@@ -1,0 +1,66 @@
+# PostgreSQL 16 standing in for Amazon RDS. It is deliberately a separate
+# manifest from the application chart: like RDS, it is a stateful dependency
+# with its own lifecycle, and the app only knows a host name and a secret.
+#
+# The `postgres-credentials` Secret is created by lab.py, not committed.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: datareliability
+  labels: { app.kubernetes.io/name: postgres }
+spec:
+  selector: { app.kubernetes.io/name: postgres }
+  ports:
+    - { name: postgres, port: 5432, targetPort: 5432 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: datareliability
+  labels: { app.kubernetes.io/name: postgres }
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: postgres }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: postgres }
+    spec:
+      # Pin the database to the control-plane node so worker-node failure
+      # drills (scenario 05) test the app tier, not a single-instance DB.
+      nodeSelector: { node-role.kubernetes.io/control-plane: "" }
+      tolerations:
+        - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }
+      securityContext: { fsGroup: 70 }
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{ containerPort: 5432, name: postgres }]
+          env:
+            - { name: POSTGRES_DB, value: customers }
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: postgres-credentials, key: username } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: postgres-credentials, key: password } }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+          args:
+            - -c
+            - shared_buffers=128MB
+            - -c
+            - log_min_duration_statement=250   # log slow queries (scenario 02)
+          resources:
+            requests: { cpu: 250m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1Gi }
+          readinessProbe:
+            exec: { command: [sh, -c, 'pg_isready -U "$POSTGRES_USER" -d customers'] }
+            periodSeconds: 5
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: 5Gi } }

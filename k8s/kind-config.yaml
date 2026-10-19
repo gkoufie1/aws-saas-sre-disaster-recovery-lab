@@ -1,0 +1,22 @@
+# Three nodes so that "a node dies" is a survivable event worth testing:
+# app replicas are spread across the two workers (see the chart's
+# topologySpreadConstraints) and the control plane stays out of it.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: datareliability
+# Kubernetes 1.35: kind v0.33 defaults to 1.37, but Semarchy documents
+# 1.32-1.35 for self-hosted deployments, so the lab stays inside that range.
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.35.0
+    # NodePorts published on localhost for the API, Grafana and Prometheus.
+    extraPortMappings:
+      - { containerPort: 30080, hostPort: 30080, listenAddress: "127.0.0.1" }
+      - { containerPort: 30300, hostPort: 30300, listenAddress: "127.0.0.1" }
+      - { containerPort: 30090, hostPort: 30090, listenAddress: "127.0.0.1" }
+  - role: worker
+    image: kindest/node:v1.35.0
+    labels: { lab.datareliability/pool: app }
+  - role: worker
+    image: kindest/node:v1.35.0
+    labels: { lab.datareliability/pool: app }

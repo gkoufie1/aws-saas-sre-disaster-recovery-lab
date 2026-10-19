@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars (git-ignored) and fill in.
+region             = "us-east-2"
+admin_cidrs        = ["203.0.113.10/32"] # your public IP
+budget_alert_email = "you@example.com"
+
+# Drill toggles
+db_multi_az        = false # true only for the AZ-failover drill
+node_capacity_type = "SPOT"
+enable_guardduty   = false

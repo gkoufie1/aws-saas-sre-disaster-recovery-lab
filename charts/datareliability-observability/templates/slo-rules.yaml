@@ -1,0 +1,167 @@
+# SLIs, SLO burn-rate alerts and operational alerts for the customer API.
+#
+# SLOs (30-day window, lab targets, see docs/slos.md):
+#   Availability: 99.9% of API requests return non-5xx   -> budget 0.1%
+#   Latency:      95% of API requests complete < 300 ms  -> budget 5%
+#
+# Probe and metrics endpoints are excluded from SLIs: Kubernetes polling
+# /readyz is not customer traffic.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: datareliability-slo
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    # ------------------------------------------------------------ SLIs
+    - name: datareliability-sli
+      interval: 15s
+      rules:
+        {{- range $w := list "5m" "30m" "1h" "6h" "1d" "3d" }}
+        - record: api:sli_errors:ratio_rate{{ $w }}
+          expr: |
+            sum(rate(http_requests_total{job="datareliability-api",route!~"/healthz|/readyz|/metrics",status=~"5.."}[{{ $w }}]))
+            /
+            clamp_min(sum(rate(http_requests_total{job="datareliability-api",route!~"/healthz|/readyz|/metrics"}[{{ $w }}])), 1e-9)
+        - record: api:sli_slow:ratio_rate{{ $w }}
+          expr: |
+            1 - (
+              sum(rate(http_request_duration_seconds_bucket{job="datareliability-api",route!~"/healthz|/readyz|/metrics",le="0.3"}[{{ $w }}]))
+              /
+              clamp_min(sum(rate(http_request_duration_seconds_count{job="datareliability-api",route!~"/healthz|/readyz|/metrics"}[{{ $w }}])), 1e-9)
+            )
+        - record: client:sli_errors:ratio_rate{{ $w }}
+          expr: |
+            sum(rate(loadgen_requests_total{outcome=~"http_5xx|error"}[{{ $w }}]))
+            /
+            clamp_min(sum(rate(loadgen_requests_total[{{ $w }}])), 1e-9)
+        {{- end }}
+        - record: api:request_duration_seconds:p95_rate5m
+          expr: |
+            histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job="datareliability-api",route!~"/healthz|/readyz|/metrics"}[5m])))
+        # Per user journey. Added after scenario 02: a 63x regression on one
+        # route (search) stayed inside the aggregate latency budget.
+        - record: api:route_request_duration_seconds:p95_rate5m
+          expr: |
+            histogram_quantile(0.95, sum by (le, method, route) (rate(http_request_duration_seconds_bucket{job="datareliability-api",route!~"/healthz|/readyz|/metrics"}[5m])))
+
+    # ------------------------------------------------------------ SLO alerts
+    # Multi-window, multi-burn-rate (Google SRE Workbook, ch. 5).
+    # Fast burn: 14.4x budget over 1h AND 5m -> 2% of a 30d budget in 1h.
+    # Slow burn:  6x budget over 6h AND 30m -> 5% of a 30d budget in 6h.
+    - name: datareliability-slo-alerts
+      rules:
+        - alert: APIAvailabilityFastBurn
+          expr: |
+            api:sli_errors:ratio_rate1h > (14.4 * 0.001)
+            and
+            api:sli_errors:ratio_rate5m > (14.4 * 0.001)
+          labels: { severity: page, slo: availability }
+          annotations:
+            summary: "API is burning its availability error budget fast"
+            description: "5xx ratio {{ "{{" }} $value | humanizePercentage {{ "}}" }} over 5m; at this rate the 30-day budget is gone in ~2 days."
+            runbook_url: docs/runbooks/api-availability.md
+        - alert: APIAvailabilitySlowBurn
+          expr: |
+            api:sli_errors:ratio_rate6h > (6 * 0.001)
+            and
+            api:sli_errors:ratio_rate30m > (6 * 0.001)
+          labels: { severity: ticket, slo: availability }
+          annotations:
+            summary: "API availability error budget is burning steadily"
+            runbook_url: docs/runbooks/api-availability.md
+        # Latency budget is 5%, so 14.4x would mean 72% of requests slow,
+        # which is too late to page on. 6x (30% slow) pages; 3x tickets.
+        - alert: APILatencyFastBurn
+          expr: |
+            api:sli_slow:ratio_rate1h > (6 * 0.05)
+            and
+            api:sli_slow:ratio_rate5m > (6 * 0.05)
+          labels: { severity: page, slo: latency }
+          annotations:
+            summary: "More than 30% of API requests are slower than 300 ms"
+            runbook_url: docs/runbooks/api-latency.md
+        - alert: APILatencySlowBurn
+          expr: |
+            api:sli_slow:ratio_rate6h > (3 * 0.05)
+            and
+            api:sli_slow:ratio_rate30m > (3 * 0.05)
+          labels: { severity: ticket, slo: latency }
+          annotations:
+            summary: "API latency error budget is burning steadily"
+            runbook_url: docs/runbooks/api-latency.md
+
+    # ------------------------------------------------------------ symptoms
+    - name: datareliability-operational
+      rules:
+        # Black-box: catches total outages, where the API exports nothing.
+        - alert: SyntheticClientFailing
+          expr: client:sli_errors:ratio_rate5m > 0.05
+          for: 1m
+          labels: { severity: page }
+          annotations:
+            summary: "Synthetic client sees >5% failed requests"
+            description: "Client-observed failure ratio {{ "{{" }} $value | humanizePercentage {{ "}}" }}. Server-side metrics may be missing if every pod is down."
+            runbook_url: docs/runbooks/api-availability.md
+        # kube-prometheus-stack ships KubePodCrashLooping with `for: 15m`;
+        # this fires sooner and only for this namespace.
+        - alert: APIPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="datareliability"}[10m]) > 2
+          labels: { severity: page }
+          annotations:
+            summary: "{{ "{{" }} $labels.pod {{ "}}" }} restarted more than twice in 10 minutes"
+            runbook_url: docs/runbooks/pod-crashloop.md
+        - alert: APIReplicasUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{namespace="datareliability",deployment="datareliability-api"}
+            < kube_deployment_spec_replicas{namespace="datareliability",deployment="datareliability-api"}
+          for: 2m
+          labels: { severity: warning }
+          annotations:
+            summary: "datareliability-api is running below desired replicas"
+            runbook_url: docs/runbooks/node-failure.md
+        - alert: APIDatabaseErrors
+          expr: sum(rate(db_errors_total{job="datareliability-api"}[5m])) > 0.1
+          for: 1m
+          labels: { severity: page }
+          annotations:
+            summary: "API is failing database operations"
+            runbook_url: docs/runbooks/database-connectivity.md
+        # 7 min = the earliest a 5-minute schedule can distinguish "a backup was
+        # missed" from a normal gap (5 min + dump time + slack). Exposure is
+        # already past the 5-min RPO target by then, hence page. The original
+        # 15-minute threshold was 3x the target (scenario 03 finding).
+        - alert: PostgresBackupStale
+          expr: time() - kube_cronjob_status_last_successful_time{namespace="datareliability",cronjob="postgres-backup"} > 420
+          labels: { severity: page }
+          annotations:
+            summary: "No successful database backup in 7 minutes: a restore now would exceed the 5-minute RPO target"
+            runbook_url: docs/runbooks/disaster-recovery.md
+        # Per-route guard. Ticket, not page: the aggregate SLO decides paging;
+        # this catches one journey degrading while the aggregate looks fine.
+        - alert: APIRouteLatencyDegraded
+          expr: |
+            api:route_request_duration_seconds:p95_rate5m > 0.3
+            and on (method, route)
+            sum by (method, route) (rate(http_requests_total{job="datareliability-api",route!~"/healthz|/readyz|/metrics"}[5m])) > 0.1
+          for: 5m
+          labels: { severity: ticket, slo: latency }
+          annotations:
+            summary: "{{ "{{" }} $labels.method {{ "}}" }} {{ "{{" }} $labels.route {{ "}}" }} p95 is {{ "{{" }} $value | humanizeDuration {{ "}}" }} (> 300 ms) for 5m"
+            runbook_url: docs/runbooks/api-latency.md
+        # Only jobs *started in the last 15 minutes* count. Failed Job objects
+        # persist (failedJobsHistoryLimit), so the original rule kept firing for
+        # over an hour after backups had recovered (scenario 03 finding).
+        - alert: PostgresBackupJobFailed
+          expr: |
+            sum(
+              kube_job_status_failed{namespace="datareliability",job_name=~"postgres-backup-.*"}
+              * on (job_name) group_left ()
+              ((time() - kube_job_status_start_time{namespace="datareliability",job_name=~"postgres-backup-.*"}) < 900)
+            ) > 0
+          labels: { severity: ticket }
+          annotations:
+            summary: "A database backup job failed in the last 15 minutes"
+            description: "kubectl -n datareliability get jobs -l app.kubernetes.io/name!=x | grep postgres-backup; check its logs."
+            runbook_url: docs/runbooks/disaster-recovery.md

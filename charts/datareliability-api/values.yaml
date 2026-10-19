@@ -1,0 +1,53 @@
+replicaCount: 2
+
+image:
+  repository: datareliability-api
+  tag: "1.0.2"
+  pullPolicy: IfNotPresent
+
+preStopSleepSeconds: 5
+
+database:
+  host: postgres
+  port: 5432
+  name: customers
+  # Secret with `username` and `password` keys. Created out-of-band
+  # (lab.py locally; External Secrets / Secrets Manager on AWS).
+  existingSecret: postgres-credentials
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30080
+
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { memory: 256Mi }
+
+# Spread replicas across nodes so a single node failure leaves capacity.
+topologySpread:
+  enabled: true
+  maxSkew: 1
+  whenUnsatisfiable: ScheduleAnyway
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# How long pods stay bound to a NotReady/unreachable node before being
+# evicted. Kubernetes defaults to 300s (null = cluster default). Scenario 05
+# measured that default: one replica carried all traffic for ~5 min after a
+# node died. 30s is safe for this stateless API; a stateful workload, or a
+# flaky network that causes brief NotReady blips, would want longer.
+nodeFailureTolerationSeconds: 30
+
+nodeSelector:
+  lab.datareliability/pool: app
+
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  labels:
+    release: kube-prometheus-stack
+
+extraEnv: []

@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "api.name" . }}
+  labels: {{- include "api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+  selector:
+    matchLabels: {{- include "api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "api.labels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: { type: RuntimeDefault }
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpread.enabled }}
+      topologySpreadConstraints:
+        - maxSkew: {{ .Values.topologySpread.maxSkew }}
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: {{ .Values.topologySpread.whenUnsatisfiable }}
+          labelSelector:
+            matchLabels: {{- include "api.selectorLabels" . | nindent 14 }}
+          # Count only pods of the same revision. Without this, old pods that
+          # are still terminating during a rollout skew placement, and a
+          # `rollout restart` put both replicas on one node (scenario 05 follow-up).
+          matchLabelKeys: [pod-template-hash]
+      {{- end }}
+      {{- with .Values.nodeFailureTolerationSeconds }}
+      tolerations:
+        - { key: node.kubernetes.io/not-ready, operator: Exists, effect: NoExecute, tolerationSeconds: {{ . }} }
+        - { key: node.kubernetes.io/unreachable, operator: Exists, effect: NoExecute, tolerationSeconds: {{ . }} }
+      {{- end }}
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - { name: http, containerPort: 8000 }
+          env:
+            - { name: APP_VERSION, value: {{ .Values.image.tag | quote }} }
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - { name: DB_HOST, value: {{ .Values.database.host | quote }} }
+            - { name: DB_PORT, value: {{ .Values.database.port | quote }} }
+            - { name: DB_NAME, value: {{ .Values.database.name | quote }} }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: {{ .Values.database.existingSecret }}, key: username } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ .Values.database.existingSecret }}, key: password } }
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          # Startup gives the interpreter time to boot without the liveness
+          # probe killing it; liveness never depends on the database.
+          startupProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          # Keep serving for a few seconds after SIGTERM is scheduled, while
+          # kube-proxy removes this pod from every node's endpoints. Without it,
+          # rollouts dropped in-flight requests (scenario 04, first run).
+          lifecycle:
+            preStop:
+              sleep: { seconds: {{ .Values.preStopSleepSeconds }} }
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: {} }

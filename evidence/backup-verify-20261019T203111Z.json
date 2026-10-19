@@ -1,0 +1,15 @@
+{
+  "verified_at": "2026-10-19T20:31:11.447Z",
+  "backup": "postgres/customers/20261019T203026Z.dump",
+  "restore_seconds": 22.1,
+  "rows_restored": 1010268,
+  "rows_live": 1010366,
+  "newest_record_age_s": 45,
+  "indexes": [
+    "customers_created_at_idx",
+    "customers_email_idx",
+    "customers_external_id_key",
+    "customers_pkey"
+  ],
+  "verdict": "PASS"
+}

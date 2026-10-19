@@ -1,0 +1,23 @@
+# generated credentials and lab state
+.lab/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+*.tfvars
+!*.tfvars.example
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/

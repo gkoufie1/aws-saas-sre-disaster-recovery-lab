@@ -1,0 +1,1839 @@
+{
+  "scenario": "scenario-03",
+  "title": "Database credential drift",
+  "started": "2026-10-19T19:56:40.294Z",
+  "events": [
+    {
+      "t": "2026-10-19T19:56:40.294Z",
+      "offset_s": 0.0,
+      "event": "steady state confirmed",
+      "already_firing": [
+        "APIAvailabilitySlowBurn"
+      ]
+    },
+    {
+      "t": "2026-10-19T19:56:40.296Z",
+      "offset_s": 0.0,
+      "event": "password rotated in PostgreSQL only (Kubernetes Secret not updated)"
+    },
+    {
+      "t": "2026-10-19T19:56:40.534Z",
+      "offset_s": 0.2,
+      "event": "existing pooled connections still authenticated; waiting 60s to show the latent state"
+    },
+    {
+      "t": "2026-10-19T19:57:40.543Z",
+      "offset_s": 60.2,
+      "event": "routine maintenance: PostgreSQL pod restarted (drops all connections)"
+    },
+    {
+      "t": "2026-10-19T19:58:40.867Z",
+      "offset_s": 120.6,
+      "event": "alert firing: APIAvailabilityFastBurn"
+    },
+    {
+      "t": "2026-10-19T19:58:50.868Z",
+      "offset_s": 130.6,
+      "event": "diagnostics captured"
+    },
+    {
+      "t": "2026-10-19T19:59:21.828Z",
+      "offset_s": 161.5,
+      "event": "alert firing: APIDatabaseErrors"
+    },
+    {
+      "t": "2026-10-19T20:00:06.935Z",
+      "offset_s": 206.6,
+      "event": "alert firing: SyntheticClientFailing"
+    },
+    {
+      "t": "2026-10-19T20:00:21.970Z",
+      "offset_s": 221.7,
+      "event": "alert firing: APIReplicasUnavailable"
+    },
+    {
+      "t": "2026-10-19T20:00:36.988Z",
+      "offset_s": 236.7,
+      "event": "alert firing: PostgresBackupJobFailed"
+    },
+    {
+      "t": "2026-10-19T20:00:52.029Z",
+      "offset_s": 251.7,
+      "event": "remediation: roll forward - update Kubernetes Secret to the rotated password"
+    },
+    {
+      "t": "2026-10-19T20:00:52.462Z",
+      "offset_s": 252.2,
+      "event": "restart API pods so they read the new Secret value"
+    },
+    {
+      "t": "2026-10-19T20:01:08.128Z",
+      "offset_s": 267.8,
+      "event": "recovered: 10 consecutive successful probe write+read cycles"
+    }
+  ],
+  "alerts_first_firing": {
+    "APIAvailabilitySlowBurn": "before-injection",
+    "APIAvailabilityFastBurn": "2026-10-19T19:58:40.867Z",
+    "APIDatabaseErrors": "2026-10-19T19:59:21.828Z",
+    "SyntheticClientFailing": "2026-10-19T20:00:06.935Z",
+    "APIReplicasUnavailable": "2026-10-19T20:00:21.970Z",
+    "PostgresBackupJobFailed": "2026-10-19T20:00:36.988Z"
+  },
+  "probe_summary": {
+    "samples": 259,
+    "failed": 186,
+    "slow_over_600ms": 0,
+    "first_failure": "2026-10-19T19:57:41.047Z",
+    "last_failure": "2026-10-19T20:00:56.649Z",
+    "failure_details": [
+      "HTTP 503",
+      "RemoteDisconnected",
+      "TimeoutError"
+    ],
+    "max_ms": 2009
+  },
+  "probe_samples": [
+    {
+      "t": "2026-10-19T19:56:10.287Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:11.311Z",
+      "ok": true,
+      "ms": 58,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:12.376Z",
+      "ok": true,
+      "ms": 21,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:13.398Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:14.419Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:15.449Z",
+      "ok": true,
+      "ms": 73,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:16.533Z",
+      "ok": true,
+      "ms": 36,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:17.570Z",
+      "ok": true,
+      "ms": 20,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:18.593Z",
+      "ok": true,
+      "ms": 24,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:19.619Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:20.642Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:21.673Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:22.701Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:23.718Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:24.748Z",
+      "ok": true,
+      "ms": 20,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:25.782Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:26.811Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:27.835Z",
+      "ok": true,
+      "ms": 48,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:28.889Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:29.914Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:30.929Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:31.969Z",
+      "ok": true,
+      "ms": 27,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:33.007Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:34.036Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:35.061Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:36.087Z",
+      "ok": true,
+      "ms": 36,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:37.126Z",
+      "ok": true,
+      "ms": 35,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:38.172Z",
+      "ok": true,
+      "ms": 13,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:39.194Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:40.220Z",
+      "ok": true,
+      "ms": 33,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:41.259Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:42.297Z",
+      "ok": true,
+      "ms": 27,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:43.338Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:44.361Z",
+      "ok": true,
+      "ms": 13,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:45.375Z",
+      "ok": true,
+      "ms": 13,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:46.398Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:47.438Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:48.459Z",
+      "ok": true,
+      "ms": 54,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:49.516Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:50.544Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:51.574Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:52.596Z",
+      "ok": true,
+      "ms": 30,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:53.629Z",
+      "ok": true,
+      "ms": 29,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:54.668Z",
+      "ok": true,
+      "ms": 25,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:55.708Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:56.733Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:57.755Z",
+      "ok": true,
+      "ms": 37,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:58.792Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:56:59.821Z",
+      "ok": true,
+      "ms": 30,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:00.866Z",
+      "ok": true,
+      "ms": 35,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:01.906Z",
+      "ok": true,
+      "ms": 21,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:02.929Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:03.947Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:04.967Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:05.991Z",
+      "ok": true,
+      "ms": 49,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:07.046Z",
+      "ok": true,
+      "ms": 25,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:08.083Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:09.106Z",
+      "ok": true,
+      "ms": 26,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:10.143Z",
+      "ok": true,
+      "ms": 36,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:11.183Z",
+      "ok": true,
+      "ms": 29,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:12.223Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:13.261Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:14.280Z",
+      "ok": true,
+      "ms": 31,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:15.327Z",
+      "ok": true,
+      "ms": 50,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:16.384Z",
+      "ok": true,
+      "ms": 31,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:17.424Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:18.447Z",
+      "ok": true,
+      "ms": 21,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:19.472Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:20.500Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:21.528Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:22.552Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:23.576Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:24.597Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:25.625Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:26.654Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:27.674Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:28.705Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:29.736Z",
+      "ok": true,
+      "ms": 20,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:30.763Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:31.791Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:32.821Z",
+      "ok": true,
+      "ms": 36,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:33.872Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:34.899Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:35.921Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:36.948Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:37.968Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:38.983Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:40.004Z",
+      "ok": true,
+      "ms": 32,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T19:57:41.047Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "HTTP 503"
+    },
+    {
+      "t": "2026-10-19T19:57:42.056Z",
+      "ok": false,
+      "ms": 2007,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T19:57:45.078Z",
+      "ok": false,
+      "ms": 2002,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T19:57:48.092Z",
+      "ok": false,
+      "ms": 2007,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T19:57:51.106Z",
+      "ok": false,
+      "ms": 2009,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T19:57:54.121Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:57:55.129Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:57:56.144Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:57:57.156Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:57:58.172Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:57:59.183Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:00.191Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:01.198Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:02.206Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:03.215Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:04.222Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:05.236Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:06.248Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:07.257Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:08.262Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:09.275Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:10.282Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:11.289Z",
+      "ok": false,
+      "ms": 11,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:12.312Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:13.321Z",
+      "ok": false,
+      "ms": 9,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:14.333Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:15.343Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:16.351Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:17.361Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:18.374Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:19.390Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:20.399Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:21.405Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:22.416Z",
+      "ok": false,
+      "ms": 13,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:23.434Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:24.445Z",
+      "ok": false,
+      "ms": 18,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:25.471Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:26.479Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:27.484Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:28.493Z",
+      "ok": false,
+      "ms": 8,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:29.509Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:30.516Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:31.543Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:32.548Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:33.559Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:34.575Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:35.593Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:36.604Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:37.608Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:38.625Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:39.629Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:40.636Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:41.646Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:42.657Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:43.670Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:44.683Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:45.691Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:46.700Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:47.708Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:48.720Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:49.732Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:50.759Z",
+      "ok": false,
+      "ms": 8,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:51.773Z",
+      "ok": false,
+      "ms": 9,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:52.785Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:53.793Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:54.801Z",
+      "ok": false,
+      "ms": 14,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:55.825Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:56.841Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:57.852Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:58.864Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:58:59.893Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:00.906Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:01.920Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:02.934Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:03.939Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:04.947Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:05.962Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:06.979Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:07.986Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:09.010Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:10.034Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:11.048Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:12.059Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:13.082Z",
+      "ok": false,
+      "ms": 6,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:14.097Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:15.106Z",
+      "ok": false,
+      "ms": 9,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:16.117Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:17.123Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:18.134Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:19.147Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:20.153Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:21.164Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:22.174Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:23.181Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:24.204Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:25.216Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:26.223Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:27.233Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:28.242Z",
+      "ok": false,
+      "ms": 9,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:29.254Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:30.260Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:31.289Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:32.312Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:33.331Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:34.344Z",
+      "ok": false,
+      "ms": 151,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:35.502Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:36.513Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:37.521Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:38.536Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:39.556Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:40.570Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:41.582Z",
+      "ok": false,
+      "ms": 19,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:42.614Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:43.626Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:44.657Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:45.663Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:46.671Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:47.676Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:48.682Z",
+      "ok": false,
+      "ms": 20,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:49.709Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:50.717Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:51.727Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:52.739Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:53.746Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:54.758Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:55.764Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:56.770Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:57.779Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:58.793Z",
+      "ok": false,
+      "ms": 32,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T19:59:59.830Z",
+      "ok": false,
+      "ms": 17,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:00.855Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:01.864Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:02.869Z",
+      "ok": false,
+      "ms": 7,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:03.880Z",
+      "ok": false,
+      "ms": 23,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:04.910Z",
+      "ok": false,
+      "ms": 70,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:05.992Z",
+      "ok": false,
+      "ms": 18,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:07.017Z",
+      "ok": false,
+      "ms": 42,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:08.071Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:09.081Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:10.088Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:11.100Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:12.108Z",
+      "ok": false,
+      "ms": 8,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:13.122Z",
+      "ok": false,
+      "ms": 19,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:14.157Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:15.174Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:16.181Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:17.196Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:18.203Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:19.216Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:20.228Z",
+      "ok": false,
+      "ms": 10,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:21.253Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:22.261Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:23.270Z",
+      "ok": false,
+      "ms": 6,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:24.290Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:25.295Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:26.304Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:27.314Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:28.325Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:29.335Z",
+      "ok": false,
+      "ms": 6,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:30.343Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:31.355Z",
+      "ok": false,
+      "ms": 11,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:32.380Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:33.387Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:34.395Z",
+      "ok": false,
+      "ms": 10,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:35.421Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:36.431Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:37.436Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:38.450Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:39.456Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:40.463Z",
+      "ok": false,
+      "ms": 5,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:41.485Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:42.496Z",
+      "ok": false,
+      "ms": 2,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:43.506Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:44.518Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:45.531Z",
+      "ok": false,
+      "ms": 16,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:46.551Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:47.569Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:48.575Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:49.593Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:50.596Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:51.609Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:52.612Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:53.624Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:54.634Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:55.639Z",
+      "ok": false,
+      "ms": 4,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:56.649Z",
+      "ok": false,
+      "ms": 3,
+      "detail": "RemoteDisconnected"
+    },
+    {
+      "t": "2026-10-19T20:00:57.660Z",
+      "ok": true,
+      "ms": 47,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:00:58.713Z",
+      "ok": true,
+      "ms": 31,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:00:59.755Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:00.781Z",
+      "ok": true,
+      "ms": 24,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:01.807Z",
+      "ok": true,
+      "ms": 29,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:02.842Z",
+      "ok": true,
+      "ms": 27,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:03.881Z",
+      "ok": true,
+      "ms": 33,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:04.922Z",
+      "ok": true,
+      "ms": 51,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:05.973Z",
+      "ok": true,
+      "ms": 37,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:07.024Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:08.044Z",
+      "ok": true,
+      "ms": 38,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:09.097Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:10.119Z",
+      "ok": true,
+      "ms": 53,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:11.172Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:01:12.204Z",
+      "ok": true,
+      "ms": 37,
+      "detail": "201/200"
+    }
+  ],
+  "diagnostics": {
+    "pods": "NAME                                READY   STATUS      RESTARTS   AGE     IP            NODE                            NOMINATED NODE   READINESS GATES\ndatareliability-api-6b77cb8-8vhh2   0/1     Running     0          20m     10.244.2.18   datareliability-worker          <none>           <none>\ndatareliability-api-6b77cb8-l42fd   0/1     Running     0          20m     10.244.1.9    datareliability-worker2         <none>           <none>\nloadgen-745d6d465c-gdnss            1/1     Running     0          52m     10.244.0.12   datareliability-control-plane   <none>           <none>\npostgres-0                          1/1     Running     0          70s     10.244.0.13   datareliability-control-plane   <none>           <none>\npostgres-backup-29873985-k8jjr      0/1     Completed   0          13m     10.244.2.20   datareliability-worker          <none>           <none>\npostgres-backup-29873990-c55nw      0/1     Completed   0          8m51s   10.244.2.21   datareliability-worker          <none>           <none>\npostgres-backup-29873995-c92bh      0/1     Completed   0          3m51s   10.244.2.22   datareliability-worker          <none>           <none>",
+    "endpoints": "NAME                        ADDRESSTYPE   PORTS   ENDPOINTS                AGE\ndatareliability-api-cf5cc   IPv4          8000    10.244.2.18,10.244.1.9   53m",
+    "api_logs": "[pod/datareliability-api-6b77cb8-8vhh2/api] {\"ts\":\"2026-10-19 19:58:47,979\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-8vhh2\",\"msg\":\"db unavailable op=create err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-8vhh2/api] {\"ts\":\"2026-10-19 19:58:48,695\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-8vhh2\",\"msg\":\"db unavailable op=create err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-8vhh2/api] {\"ts\":\"2026-10-19 19:58:49,364\",\"level\":\"WARNING\",\"pod\":\"datareliability-api-6b77cb8-8vhh2\",\"msg\":\"error connecting in 'pool-1': connection failed: connection to server at \"10.96.78.250\", port 5432 failed: FATAL:  password authentication failed for user \"app\"\"}\n[pod/datareliability-api-6b77cb8-8vhh2/api] {\"ts\":\"2026-10-19 19:58:50,069\",\"level\":\"WARNING\",\"pod\":\"datareliability-api-6b77cb8-8vhh2\",\"msg\":\"error connecting in 'pool-1': connection failed: connection to server at \"10.96.78.250\", port 5432 failed: FATAL:  password authentication failed for user \"app\"\"}\n[pod/datareliability-api-6b77cb8-8vhh2/api] {\"ts\":\"2026-10-19 19:58:50,896\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-8vhh2\",\"msg\":\"db unavailable op=search err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-8vhh2/api] {\"ts\":\"2026-10-19 19:58:50,983\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-8vhh2\",\"msg\":\"db unavailable op=get err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-l42fd/api] {\"ts\":\"2026-10-19 19:58:49,478\",\"level\":\"WARNING\",\"pod\":\"datareliability-api-6b77cb8-l42fd\",\"msg\":\"error connecting in 'pool-1': connection failed: connection to server at \"10.96.78.250\", port 5432 failed: FATAL:  password authentication failed for user \"app\"\"}\n[pod/datareliability-api-6b77cb8-l42fd/api] {\"ts\":\"2026-10-19 19:58:50,331\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-l42fd\",\"msg\":\"db unavailable op=update err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-l42fd/api] {\"ts\":\"2026-10-19 19:58:50,600\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-l42fd\",\"msg\":\"db unavailable op=search err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-l42fd/api] {\"ts\":\"2026-10-19 19:58:50,694\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-l42fd\",\"msg\":\"db unavailable op=create err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-l42fd/api] {\"ts\":\"2026-10-19 19:58:50,879\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-l42fd\",\"msg\":\"db unavailable op=update err=PoolTimeout: couldn't get a connection after 3.00 sec\"}\n[pod/datareliability-api-6b77cb8-l42fd/api] {\"ts\":\"2026-10-19 19:58:51,038\",\"level\":\"ERROR\",\"pod\":\"datareliability-api-6b77cb8-l42fd\",\"msg\":\"db unavailable op=get err=PoolTimeout: couldn't get a connection after 3.00 sec\"}",
+    "postgres_logs": "2026-10-19 19:58:41.280 UTC [165] FATAL:  password authentication failed for user \"app\"\n2026-10-19 19:58:41.280 UTC [165] DETAIL:  Connection matched file \"/var/lib/postgresql/data/pgdata/pg_hba.conf\" line 128: \"host all all all scram-sha-256\"\n2026-10-19 19:58:45.225 UTC [174] FATAL:  password authentication failed for user \"app\"\n2026-10-19 19:58:45.225 UTC [174] DETAIL:  Connection matched file \"/var/lib/postgresql/data/pgdata/pg_hba.conf\" line 128: \"host all all all scram-sha-256\"\n2026-10-19 19:58:49.363 UTC [182] FATAL:  password authentication failed for user \"app\"\n2026-10-19 19:58:49.363 UTC [182] DETAIL:  Connection matched file \"/var/lib/postgresql/data/pgdata/pg_hba.conf\" line 128: \"host all all all scram-sha-256\"\n2026-10-19 19:58:49.477 UTC [183] FATAL:  password authentication failed for user \"app\"\n2026-10-19 19:58:49.477 UTC [183] DETAIL:  Connection matched file \"/var/lib/postgresql/data/pgdata/pg_hba.conf\" line 128: \"host all all all scram-sha-256\"\n2026-10-19 19:58:50.068 UTC [184] FATAL:  password authentication failed for user \"app\"\n2026-10-19 19:58:50.068 UTC [184] DETAIL:  Connection matched file \"/var/lib/postgresql/data/pgdata/pg_hba.conf\" line 128: \"host all all all scram-sha-256\"",
+    "backup_jobs": "NAME                       STATUS     COMPLETIONS   DURATION   AGE\npostgres-backup-29873985   Complete   1/1           12s        13m\npostgres-backup-29873990   Complete   1/1           11s        8m51s\npostgres-backup-29873995   Complete   1/1           15s        3m51s"
+  }
+}

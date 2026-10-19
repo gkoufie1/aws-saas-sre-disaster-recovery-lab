@@ -1,0 +1,6 @@
+apiVersion: v2
+name: datareliability-api
+description: Customer-records API for the DataReliability SRE & DR lab
+type: application
+version: 1.2.1
+appVersion: "1.0.2"

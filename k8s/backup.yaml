@@ -1,0 +1,57 @@
+# Logical backups every 5 minutes to off-cluster object storage.
+#
+# A 5-minute schedule bounds the *design* RPO at roughly 5 minutes plus
+# dump time. The DR drill measures what is actually achieved; see
+# docs/dr/ for results and why this is not the same as RDS PITR.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: datareliability
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 240
+      template:
+        metadata:
+          labels: { app.kubernetes.io/name: postgres-backup }
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: backup
+              image: datareliability-backup:1.0.1
+              imagePullPolicy: IfNotPresent
+              command: [backup.sh]
+              envFrom:
+                - configMapRef: { name: backup-config }
+              env:
+                - name: PGUSER
+                  valueFrom: { secretKeyRef: { name: postgres-credentials, key: username } }
+                - name: PGPASSWORD
+                  valueFrom: { secretKeyRef: { name: postgres-credentials, key: password } }
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom: { secretKeyRef: { name: objectstore-credentials, key: access_key } }
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom: { secretKeyRef: { name: objectstore-credentials, key: secret_key } }
+              resources:
+                requests: { cpu: 100m, memory: 128Mi }
+                limits: { memory: 512Mi }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-config
+  namespace: datareliability
+data:
+  PGHOST: postgres
+  PGPORT: "5432"
+  PGDATABASE: customers
+  BACKUP_BUCKET: datareliability-backups
+  # SeaweedFS container on the kind Docker network, outside the cluster.
+  S3_ENDPOINT: http://dr-objectstore:8333
+  AWS_DEFAULT_REGION: us-east-1

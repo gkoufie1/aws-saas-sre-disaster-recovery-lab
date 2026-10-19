@@ -1,0 +1,703 @@
+{
+  "scenario": "scenario-05",
+  "title": "Worker node failure",
+  "started": "2026-10-19T20:32:11.491Z",
+  "events": [
+    {
+      "t": "2026-10-19T20:32:11.491Z",
+      "offset_s": 0.0,
+      "event": "steady state confirmed",
+      "already_firing": [
+        "APIAvailabilitySlowBurn",
+        "APIRouteLatencyDegraded"
+      ]
+    },
+    {
+      "t": "2026-10-19T20:32:12.125Z",
+      "offset_s": 0.6,
+      "event": "node failure: docker stop datareliability-worker (simulates instance loss)"
+    },
+    {
+      "t": "2026-10-19T20:32:24.220Z",
+      "offset_s": 12.7,
+      "event": "alert resolved: APIRouteLatencyDegraded"
+    },
+    {
+      "t": "2026-10-19T20:33:07.458Z",
+      "offset_s": 56.0,
+      "event": "Kubernetes marked datareliability-worker NotReady (Ready=Unknown)"
+    },
+    {
+      "t": "2026-10-19T20:33:34.133Z",
+      "offset_s": 82.6,
+      "event": "replacement pod Running on a healthy node (2 replicas restored)"
+    },
+    {
+      "t": "2026-10-19T20:33:49.134Z",
+      "offset_s": 97.6,
+      "event": "diagnostics captured"
+    },
+    {
+      "t": "2026-10-19T20:33:49.588Z",
+      "offset_s": 98.1,
+      "event": "restore capacity: docker start datareliability-worker"
+    },
+    {
+      "t": "2026-10-19T20:33:53.412Z",
+      "offset_s": 101.9,
+      "event": "node Ready again"
+    },
+    {
+      "t": "2026-10-19T20:33:53.417Z",
+      "offset_s": 101.9,
+      "event": "recovered: 10 consecutive successful probe write+read cycles"
+    }
+  ],
+  "alerts_first_firing": {
+    "APIAvailabilitySlowBurn": "before-injection",
+    "APIRouteLatencyDegraded": "before-injection"
+  },
+  "probe_summary": {
+    "samples": 75,
+    "failed": 15,
+    "slow_over_600ms": 0,
+    "first_failure": "2026-10-19T20:32:13.703Z",
+    "last_failure": "2026-10-19T20:33:01.305Z",
+    "failure_details": [
+      "TimeoutError"
+    ],
+    "max_ms": 2123
+  },
+  "probe_samples": [
+    {
+      "t": "2026-10-19T20:31:41.441Z",
+      "ok": true,
+      "ms": 33,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:42.480Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:43.518Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:44.540Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:45.571Z",
+      "ok": true,
+      "ms": 21,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:46.603Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:47.631Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:48.658Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:49.685Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:50.703Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:51.726Z",
+      "ok": true,
+      "ms": 29,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:52.765Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:53.803Z",
+      "ok": true,
+      "ms": 40,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:54.848Z",
+      "ok": true,
+      "ms": 29,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:55.883Z",
+      "ok": true,
+      "ms": 342,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:57.226Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:58.259Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:31:59.282Z",
+      "ok": true,
+      "ms": 49,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:00.347Z",
+      "ok": true,
+      "ms": 25,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:01.375Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:02.393Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:03.416Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:04.445Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:05.466Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:06.494Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:07.518Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:08.544Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:09.568Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:10.595Z",
+      "ok": true,
+      "ms": 40,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:11.642Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:12.674Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:13.703Z",
+      "ok": false,
+      "ms": 2007,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:16.714Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:17.735Z",
+      "ok": false,
+      "ms": 2013,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:20.758Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:21.784Z",
+      "ok": false,
+      "ms": 2123,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:24.921Z",
+      "ok": false,
+      "ms": 2026,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:27.957Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:28.984Z",
+      "ok": false,
+      "ms": 2044,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:32.041Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:33.070Z",
+      "ok": false,
+      "ms": 2017,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:36.096Z",
+      "ok": false,
+      "ms": 2004,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:39.109Z",
+      "ok": false,
+      "ms": 2023,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:42.138Z",
+      "ok": false,
+      "ms": 2021,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:45.171Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:32:46.199Z",
+      "ok": false,
+      "ms": 2008,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:49.221Z",
+      "ok": false,
+      "ms": 2014,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:52.237Z",
+      "ok": false,
+      "ms": 2003,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:55.244Z",
+      "ok": false,
+      "ms": 2030,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:32:58.285Z",
+      "ok": false,
+      "ms": 2012,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:33:01.305Z",
+      "ok": false,
+      "ms": 2014,
+      "detail": "TimeoutError"
+    },
+    {
+      "t": "2026-10-19T20:33:04.326Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:05.347Z",
+      "ok": true,
+      "ms": 36,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:06.397Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:07.421Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:08.445Z",
+      "ok": true,
+      "ms": 34,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:09.481Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:10.509Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:11.534Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:12.559Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:13.585Z",
+      "ok": true,
+      "ms": 39,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:14.629Z",
+      "ok": true,
+      "ms": 44,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:15.687Z",
+      "ok": true,
+      "ms": 26,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:16.725Z",
+      "ok": true,
+      "ms": 37,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:17.762Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:18.790Z",
+      "ok": true,
+      "ms": 27,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:19.820Z",
+      "ok": true,
+      "ms": 18,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:20.845Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:21.869Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:22.892Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:23.914Z",
+      "ok": true,
+      "ms": 51,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:24.972Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:25.995Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:27.025Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:28.048Z",
+      "ok": true,
+      "ms": 41,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:29.092Z",
+      "ok": true,
+      "ms": 34,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:30.133Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:31.159Z",
+      "ok": true,
+      "ms": 35,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:32.205Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:33.234Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:34.261Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:35.283Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:36.298Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:37.326Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:38.365Z",
+      "ok": true,
+      "ms": 23,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:39.390Z",
+      "ok": true,
+      "ms": 27,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:40.427Z",
+      "ok": true,
+      "ms": 35,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:41.468Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:42.492Z",
+      "ok": true,
+      "ms": 20,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:43.517Z",
+      "ok": true,
+      "ms": 37,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:44.557Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:45.584Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:46.600Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:47.621Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:48.645Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:49.678Z",
+      "ok": true,
+      "ms": 14,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:50.699Z",
+      "ok": true,
+      "ms": 38,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:51.741Z",
+      "ok": true,
+      "ms": 19,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:52.768Z",
+      "ok": true,
+      "ms": 15,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:53.793Z",
+      "ok": true,
+      "ms": 22,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:54.825Z",
+      "ok": true,
+      "ms": 16,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:55.846Z",
+      "ok": true,
+      "ms": 13,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:56.873Z",
+      "ok": true,
+      "ms": 28,
+      "detail": "201/200"
+    },
+    {
+      "t": "2026-10-19T20:33:57.909Z",
+      "ok": true,
+      "ms": 17,
+      "detail": "201/200"
+    }
+  ],
+  "diagnostics": {
+    "placement_before": "POD                                   NODE\ndatareliability-api-774754cd5-kqtkz   datareliability-worker\ndatareliability-api-774754cd5-nrh6s   datareliability-worker2",
+    "nodes": "NAME                            STATUS     ROLES           AGE   VERSION\ndatareliability-control-plane   Ready      control-plane   96m   v1.35.0\ndatareliability-worker          NotReady   <none>          95m   v1.35.0\ndatareliability-worker2         Ready      <none>          95m   v1.35.0",
+    "pods": "NAME                                      READY   STATUS        RESTARTS   AGE     IP            NODE                            NOMINATED NODE   READINESS GATES\ndatareliability-api-774754cd5-kqtkz       1/1     Terminating   0          2m17s   10.244.2.39   datareliability-worker          <none>           <none>\ndatareliability-api-774754cd5-nrh6s       1/1     Running       0          2m13s   10.244.1.5    datareliability-worker2         <none>           <none>\ndatareliability-api-774754cd5-tjzz2       1/1     Running       0          16s     10.244.1.6    datareliability-worker2         <none>           <none>\nloadgen-5dfd697868-zqpg2                  1/1     Running       0          15m     10.244.0.18   datareliability-control-plane   <none>           <none>\npostgres-0                                1/1     Running       0          19m     10.244.0.16   datareliability-control-plane   <none>           <none>\npostgres-backup-29874025-765n4            0/1     Completed     0          8m49s   10.244.2.34   datareliability-worker          <none>           <none>\npostgres-backup-29874030-tss5p            0/1     Completed     0          3m49s   10.244.2.35   datareliability-worker          <none>           <none>\npostgres-backup-manual-1792441825-rnvqd   0/1     Completed     0          3m23s   10.244.2.36   datareliability-worker          <none>           <none>\npostgres-restore-1792440875-bxk2p         0/1     Completed     0          19m     10.244.2.28   datareliability-worker          <none>           <none>\npostgres-restore-1792441848-g8mrm         0/1     Completed     0          3m1s    10.244.2.38   datareliability-worker          <none>           <none>",
+    "node_taints": "[{\"effect\":\"NoSchedule\",\"key\":\"node.kubernetes.io/unreachable\",\"timeAdded\":\"2026-10-19T20:33:02Z\"},{\"effect\":\"NoExecute\",\"key\":\"node.kubernetes.io/unreachable\",\"timeAdded\":\"2026-10-19T20:33:02Z\"}]"
+  }
+}

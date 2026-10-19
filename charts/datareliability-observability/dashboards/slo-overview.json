@@ -1,0 +1,111 @@
+{
+  "uid": "datareliability-slo",
+  "title": "DataReliability — SLO Overview",
+  "tags": ["datareliability", "slo"],
+  "timezone": "utc",
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "type": "stat", "title": "Availability (server, 1h)", "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "1 - api:sli_errors:ratio_rate1h", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 3,
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "red", "value": null }, { "color": "green", "value": 0.999 } ] } } }
+    },
+    {
+      "type": "stat", "title": "Availability (synthetic client, 1h)", "id": 2,
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "1 - client:sli_errors:ratio_rate1h", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 3,
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "red", "value": null }, { "color": "green", "value": 0.999 } ] } } }
+    },
+    {
+      "type": "stat", "title": "Requests < 300 ms (1h)", "id": 3,
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "1 - api:sli_slow:ratio_rate1h", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 2,
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "red", "value": null }, { "color": "green", "value": 0.95 } ] } } }
+    },
+    {
+      "type": "stat", "title": "Last successful backup (age)", "id": 4,
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "time() - kube_cronjob_status_last_successful_time{namespace=\"datareliability\",cronjob=\"postgres-backup\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "s",
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "green", "value": null }, { "color": "orange", "value": 330 }, { "color": "red", "value": 420 } ] } } }
+    },
+    {
+      "type": "timeseries", "title": "Error budget burn rate (availability)", "id": 5,
+      "description": "1.0 = burning exactly the 30-day budget. Fast-burn page threshold is 14.4.",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "api:sli_errors:ratio_rate5m / 0.001", "legendFormat": "5m", "refId": "A" },
+        { "expr": "api:sli_errors:ratio_rate1h / 0.001", "legendFormat": "1h", "refId": "B" },
+        { "expr": "client:sli_errors:ratio_rate5m / 0.001", "legendFormat": "client 5m", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "x", "custom": { "thresholdsStyle": { "mode": "line" } },
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "transparent", "value": null }, { "color": "red", "value": 14.4 } ] } } }
+    },
+    {
+      "type": "timeseries", "title": "Latency (p50 / p95 / p99)", "id": 6,
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"datareliability-api\",route!~\"/healthz|/readyz|/metrics\"}[2m])))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"datareliability-api\",route!~\"/healthz|/readyz|/metrics\"}[2m])))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"datareliability-api\",route!~\"/healthz|/readyz|/metrics\"}[2m])))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "thresholdsStyle": { "mode": "line" } },
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "transparent", "value": null }, { "color": "red", "value": 0.3 } ] } } }
+    },
+    {
+      "type": "timeseries", "title": "Request rate by route and status", "id": 7,
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (method, route, status) (rate(http_requests_total{job=\"datareliability-api\",route!~\"/healthz|/readyz|/metrics\"}[2m]))", "legendFormat": "{{method}} {{route}} {{status}}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "type": "timeseries", "title": "Synthetic client outcomes", "id": 8,
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum by (outcome) (rate(loadgen_requests_total[2m]))", "legendFormat": "{{outcome}}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "type": "timeseries", "title": "Ready API pods and container restarts", "id": 9,
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(kube_pod_status_ready{namespace=\"datareliability\",pod=~\"datareliability-api-.*\",condition=\"true\"})", "legendFormat": "ready pods", "refId": "A" },
+        { "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"datareliability\",pod=~\"datareliability-api-.*\"}[5m]))", "legendFormat": "restarts (5m)", "refId": "B" }
+      ]
+    },
+    {
+      "type": "timeseries", "title": "Errors: database unavailable vs application bug", "id": 10,
+      "description": "db = connectivity/availability (503, retryable). app = code/schema bug (500). Split after scenario 04.",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum by (operation) (rate(db_errors_total{job=\"datareliability-api\"}[2m]))", "legendFormat": "db {{operation}}", "refId": "A" },
+        { "expr": "sum by (operation, error) (rate(app_errors_total{job=\"datareliability-api\"}[2m]))", "legendFormat": "app {{operation}} {{error}}", "refId": "B" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "type": "timeseries", "title": "API CPU and memory vs limits", "id": 11,
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"datareliability\",container=\"api\"}[2m]))", "legendFormat": "cpu {{pod}}", "refId": "A" },
+        { "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"datareliability\",container=\"api\"}) / 1024 / 1024", "legendFormat": "MiB {{pod}}", "refId": "B" }
+      ]
+    },
+    {
+      "type": "timeseries", "title": "PostgreSQL CPU", "id": 12,
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 },
+      "targets": [{ "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"datareliability\",container=\"postgres\"}[2m]))", "legendFormat": "cores used (limit 1)", "refId": "A" }]
+    }
+  ]
+}
