@@ -24,7 +24,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: backup
-              image: datareliability-backup:1.0.1
+              image: datareliability-backup:1.0.2
               imagePullPolicy: IfNotPresent
               command: [backup.sh]
               envFrom:

@@ -24,3 +24,9 @@ and where the evidence lives, because producing that evidence is part of an SRE'
   finding in those reports. GitOps (Argo CD) would close it; see `eks-gitops-dr-drill` for that pattern.
 - No admission policy (Kyverno / Gatekeeper) yet to enforce resource limits or reject `:latest` tags.
 - No NetworkPolicies restricting pod-to-pod traffic.
+- **The CI image gate blocks only *fixable* CRITICAL vulnerabilities.** Its first run on GitHub failed
+  the backup image on CVE-2025-68121 (Go `crypto/tls`) in `gosu`, a binary inherited from the official
+  `postgres:16-alpine` base image that the backup job never uses. The binary was removed (backup
+  image 1.0.2), not suppressed. A broader scanner (Docker Scout in the IDE) still reports
+  unfixed CRITICAL/HIGH findings in that base image. They have no upstream fix to apply yet; tracking
+  them, or moving to a minimal custom base, is open work.

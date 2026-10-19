@@ -58,7 +58,7 @@ ROLLOUT_TIMEOUT = "--timeout=5m"
 IMAGES = {
     "api": ("datareliability-api", "1.0.2", ROOT / "app"),
     "loadgen": ("datareliability-loadgen", "1.0.1", ROOT / "loadgen"),
-    "backup": ("datareliability-backup", "1.0.1", ROOT / "backup"),
+    "backup": ("datareliability-backup", "1.0.2", ROOT / "backup"),
 }
 
 
