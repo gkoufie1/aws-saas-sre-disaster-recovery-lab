@@ -26,6 +26,44 @@ point-in-time-restore drill, and torn down afterwards.
 
 ¹ Time from impact to first page/alert. ² Share of the 30-day availability error budget (99.9% at the nominal 10 rps = 25,920 failed requests), from Prometheus counters.
 
+### The whole afternoon on one dashboard
+
+Every local scenario ran against the same cluster between 19:05 and 20:40 UTC. This is the project's
+Grafana dashboard over that window. Each spike is one injected failure:
+
+![Grafana SLO dashboard over all local scenarios, 19:05–20:40 UTC](docs/screenshots/local/local-grafana-scenarios.png)
+
+How to read it:
+- **Error budget burn rate** (top left). Each peak is an incident; the red line is the 14.4× fast-burn
+  paging threshold. The highest peaks (about 370× and 410×, around 19:20 and 20:00) are the
+  **full outages**: scenario 01, where pods were OOM-killed, and scenario 03, credential drift. The smaller
+  peaks (about 170× and 190×) are scenario 04's bad release, which broke creates only, run twice
+  (19:08, 19:35).
+- **Latency** (top right). The 5-second plateaus around 20:00 and 20:15 are requests waiting out the
+  database pool timeout during scenario 03 and DR Drill 001. That's the "fails slowly" finding.
+- **Ready API pods and restarts** (middle left). Scenario 01's crash loop shows as 8 restarts with ready
+  pods at 0 around 19:22.
+- **Synthetic client outcomes** (middle right). The client-side view: `success` drops to zero during the
+  full outages, even while the server exports no errors of its own.
+- **Errors: database unavailable vs application bug** (bottom right of the middle row). The split was added
+  *because of* scenario 04, when a SQL bug was being reported as a database outage.
+- The stat panels at the top show the 1-hour SLIs at the end of the window. They're red because this
+  was a deliberately abusive afternoon, not a normal day.
+
+### Scenario 02 close-up: a regression the aggregate SLO could not see
+
+![p95 latency of GET /customers (search), 19:35–20:35 UTC](docs/screenshots/local/local-prometheus-route-p95-scenario-02.png)
+
+p95 latency of **search only** (`GET /customers`). Normal is about 10 ms, flat on the floor.
+- **19:44–19:56, run 1:** the dropped index pushes search to 0.45–0.7 s. **No alert fired**, because
+  search is 15% of traffic and only about 2.6% of all requests crossed 300 ms, inside the 5% latency
+  budget.
+- **19:58–20:05 and 20:14–20:19:** the tall plateaus are *other* incidents, scenario 03 and DR Drill
+  001, where every request waited on an unreachable database. They aren't index problems.
+- **20:20–20:33, run 2:** the same regression, now with the per-route alert `APIRouteLatencyDegraded`,
+  which fired 6 min 15 s in. It recovers on the right once the index is rebuilt with
+  `CREATE INDEX CONCURRENTLY`.
+
 ### Bugs this lab found in its own design (and fixed)
 
 | Found by | Problem | Fix |
@@ -41,6 +79,47 @@ point-in-time-restore drill, and torn down afterwards.
 | Scenario 05 follow-up | `rollout restart` stacked both replicas on one node (terminating pods skew spreading) | `matchLabelKeys: [pod-template-hash]`; verified over 3 rollouts |
 | Scenario 01 | Evidence recorder missed alerts that re-fired | Transition-based alert tracking; baseline waits for pages to clear |
 | First CI run on GitHub | Trivy blocked the backup image: CRITICAL CVE in `gosu` inherited from the `postgres` base image | Removed the unused binary (not suppressed); backup image 1.0.2 |
+
+## Disaster-recovery drills
+
+### DR Drill 001 (local): database and its volume destroyed, restored from off-cluster backups
+
+![Grafana during DR Drill 001, 20:08–20:20 UTC](docs/screenshots/local/local-grafana-dr-drill-001.png)
+
+The disaster struck at 20:13:36. Look at:
+- **Synthetic client outcomes:** `success` falls to zero and recovers about 90 s later.
+- **Ready API pods:** these go to 0 on purpose. Runbook step 1 is *stop writes* (scale the API to 0)
+  so nothing writes to the empty replacement database. Then the restore runs, and the pods return.
+- **PostgreSQL CPU:** the bump is `pg_restore` loading 1M rows and rebuilding indexes, in 12 s.
+
+The 5-minute rate windows make panels trail the event by a few minutes. The precise timeline comes
+from the outside-in probe. Result: **RTO 92 s, RPO 216 s**, with the caveats in the
+[full write-up](docs/dr/dr-drill-001-results.md).
+
+### DR Drill 002 (AWS): accidental `DELETE`, recovered with RDS point-in-time restore
+
+![RDS: original instance and the point-in-time restored instance](docs/screenshots/aws/04-rds-original-and-pitr-instances.png)
+
+PITR never rewinds a database in place. It builds a **new** instance from the backups and transaction
+logs as of a chosen second. Here, `…-pitr-220855` was restored to 1 s before the `DELETE` committed
+and became the new primary. The original `datareliability-lab-postgres` was kept unmodified for
+investigation. Building the new instance took 12 min 15 s of the 15 min 52 s recovery.
+
+![S3 backups: size drops 17% after the DELETE, recovers after cutover](docs/screenshots/aws/10-s3-backups-size-drop.png)
+
+The logical backups noticed what no alert did. The first dump after the `DELETE` is **16.7% smaller**
+(31.3 → 26.1 MiB), the next two stay small, and size returns after the cutover to the restored
+instance. A "backup shrank > 10%" alert would have caught the data loss within about 3.5 minutes.
+These three dumps are also valid archives full of *wrong* data, which is why "restore the newest
+backup" is the wrong reflex for logical corruption.
+
+![Grafana on EKS during DR Drill 002](docs/screenshots/aws/01-grafana-slo-overview-1h.png)
+
+The same dashboard running on EKS during the drill. **Server-side availability: 100%** while a sixth
+of the customers were missing. Reads of deleted customers return `404`, which is correctly not an
+availability error. SLOs measure whether the service answers, not whether the data is right. The
+synthetic client's 99.86% is mostly the planned 13-second write freeze during cutover.
+[Full write-up](docs/dr/dr-drill-002-rds-pitr-results.md).
 
 ## Architecture
 
@@ -68,6 +147,37 @@ Full design, placement decisions, health model and the AWS mapping: [docs/archit
 | Guardrails | — | AWS Budget (optional; account already had a $20 cap), GuardDuty (opt-in) |
 | Identity | static keys for the local S3 store | EKS Pod Identity; backup role **verified unable to delete** backups |
 
+### On AWS
+
+![EKS cluster datareliability-lab, Kubernetes 1.35](docs/screenshots/aws/06-eks-cluster-1.35.png)
+
+The EKS cluster built by `terraform apply`: Kubernetes **1.35**, matching the local kind cluster and
+inside the 1.32–1.35 range Semarchy documents for self-hosted deployments. 22 pods: the API, load
+generator, monitoring stack and EKS system add-ons. **1 Pod Identity** association: the backup job's
+keyless S3 access.
+
+![EKS compute: two Spot nodes](docs/screenshots/aws/07-eks-spot-nodes.png)
+
+Two `t3.medium` **Spot** nodes from one managed node group, placed in two Availability Zones (the
+`10.40.9.x` and `10.40.22.x` addresses are in different AZs' subnets). Spot keeps an ephemeral lab cheap.
+The API's topology spread put one replica on each.
+
+<details>
+<summary><b>More AWS screenshots: add-ons, VPC</b></summary>
+
+![EKS add-ons including the Pod Identity Agent](docs/screenshots/aws/08-eks-addons-pod-identity.png)
+
+Managed add-ons. The **EKS Pod Identity Agent** is what lets a pod assume an IAM role without static
+access keys or the older IRSA/OIDC setup.
+
+![VPC list](docs/screenshots/aws/09-vpc-list.png)
+
+The lab's own VPC next to the account's default VPC. Inside it: public, private and database subnets
+across two AZs, and one NAT gateway, a deliberate cost trade-off recorded in
+[ADR 003](docs/adr/003-single-nat-gateway.md).
+
+</details>
+
 ## SLOs
 
 | SLI | SLO (30 d) | Alerting |
@@ -78,6 +188,51 @@ Full design, placement decisions, health model and the AWS mapping: [docs/archit
 | RTO / RPO | 15 min / 5 min | DR drill; backup freshness page at 7 min |
 
 Rationale, burn-rate maths and why there are two availability SLIs: [docs/slos.md](docs/slos.md).
+
+![Prometheus: the project's alert rules](docs/screenshots/local/local-prometheus-slo-alerts.png)
+
+The project's **11 alert rules** in Prometheus. `datareliability-slo-alerts` holds the four burn-rate
+alerts that decide paging. `datareliability-operational` holds the symptom alerts. Several of those
+exist because a scenario proved they were missing: `APIRouteLatencyDegraded` (scenario 02), the
+rewritten `PostgresBackupJobFailed` and the 7-minute `PostgresBackupStale` (scenario 03). *Inactive*
+means healthy right now. Every rule links to a runbook in [docs/runbooks/](docs/runbooks/).
+
+## Security and audit evidence
+
+![IAM backup role with a single inline policy](docs/screenshots/aws/12-iam-backup-role.png)
+
+The backup job's IAM role has exactly one inline policy, `backup-s3`: list the bucket, plus get and
+put under `postgres/*`. **No delete.** This was proven, not assumed: a pod using that role got
+`AccessDenied` on `DeleteObject` and on writes outside `postgres/`
+([evidence](evidence/aws/iam-least-privilege-check.txt)). A compromised backup job cannot erase
+backup history.
+
+<details>
+<summary><b>More: ECR, Secrets Manager rotation, CloudWatch audit logs</b></summary>
+
+![ECR repositories with immutable tags](docs/screenshots/aws/13-ecr-immutable-repos.png)
+
+ECR repositories with **immutable tags**: a tag can never be overwritten, so `helm rollback` to
+`1.0.1` always means the exact image that was tested. (Locally this lab once rebuilt an image under
+the same tag by mistake; that's the failure this setting prevents.) Images are scanned on push.
+
+![Secrets Manager: RDS-managed secret](docs/screenshots/aws/14-secrets-manager-rds-secret.png)
+![Secrets Manager: 7-day rotation](docs/screenshots/aws/15-secrets-manager-7-day-rotation.png)
+
+The RDS master password exists **only** in Secrets Manager, created and rotated by RDS
+(`manage_master_user_password`), never in Terraform state or Git. It rotates **every 7 days**, which
+means this deployment, which copies the password into a Kubernetes Secret once, would break on
+schedule. That's scenario 03 for real. The fix is to read the secret at connect time
+([DR Drill 002, finding 6](docs/dr/dr-drill-002-rds-pitr-results.md)).
+
+![CloudWatch log groups](docs/screenshots/aws/16-cloudwatch-log-groups.png)
+![EKS control-plane audit log group](docs/screenshots/aws/17-cloudwatch-eks-audit-logs.png)
+
+EKS control-plane logs (API, audit, authenticator) and RDS PostgreSQL logs in CloudWatch with 1-week
+retention: the "who changed what, when" trail an incident review or a SOC 2 change-management audit
+asks for. (The `eks-gitops-dr-drill-dev` group is a leftover from an earlier project.)
+
+</details>
 
 ## Run it
 
@@ -110,6 +265,18 @@ python lab_aws.py cleanup-restored && terraform -chdir=terraform destroy   # res
 | Grafana: *DataReliability — SLO Overview* | http://127.0.0.1:30300 (anonymous view) |
 | Prometheus alerts | http://127.0.0.1:30090/alerts |
 
+![API documentation (Swagger UI)](docs/screenshots/local/local-api-swagger.png)
+
+The API under test, from its auto-generated docs at `/docs`. Two endpoints matter most for
+reliability:
+- **`/healthz`** (liveness) deliberately does **not** touch the database, so a database outage never
+  turns into a restart storm.
+- **`/readyz`** (readiness) does check the database, so a pod that can't serve is pulled from the
+  Service.
+
+`/stats` reports the newest record, which is how the DR drills measure data loss. The version badge
+(1.0.2) is the build carrying the fixes from scenarios 04 and 05.
+
 ## Repository map
 
 ```
@@ -136,7 +303,7 @@ docs/                      architecture, SLOs, scenarios, runbooks, incidents, D
   [disaster recovery](docs/runbooks/disaster-recovery.md)
 - **Post-incident reviews:** [docs/incidents/](docs/incidents/) ([template](docs/incidents/TEMPLATE.md))
 - **Hypotheses written before running:** [docs/scenarios.md](docs/scenarios.md)
-- **AWS deployment, annotated screenshots:** [docs/aws-deployment.md](docs/aws-deployment.md)
+- **AWS deployment, all screenshots with captions:** [docs/aws-deployment.md](docs/aws-deployment.md)
 - **Decisions:** [ADR 001 local-first](docs/adr/001-local-first.md) ·
   [ADR 002 dumps vs PITR](docs/adr/002-logical-backups-and-pitr.md) ·
   [ADR 003 single NAT](docs/adr/003-single-nat-gateway.md)
