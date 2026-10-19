@@ -27,8 +27,11 @@ resource "aws_ecr_lifecycle_policy" "images" {
 }
 
 # Cost is a reliability signal too: an account-level budget with alerts
-# at 50/80/100% of actual spend and 100% of forecast.
+# at 50/80/100% of actual spend and 100% of forecast. Optional, because a
+# budget is account-wide: if the account already has one, don't duplicate it.
 resource "aws_budgets_budget" "monthly" {
+  count = var.create_budget ? 1 : 0
+
   name         = "${local.name}-monthly"
   budget_type  = "COST"
   limit_amount = tostring(var.budget_limit_usd)

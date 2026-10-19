@@ -16,9 +16,9 @@ variable "vpc_cidr" {
 }
 
 variable "kubernetes_version" {
-  description = "EKS version. Semarchy's published self-hosted range is 1.32-1.35; the lab stays inside it."
+  description = "EKS version. Semarchy's published self-hosted range is 1.32-1.35; 1.35 matches the local kind lab."
   type        = string
-  default     = "1.34"
+  default     = "1.35"
 }
 
 variable "node_instance_types" {
@@ -63,6 +63,12 @@ variable "admin_cidrs" {
   type        = list(string)
 }
 
+variable "create_budget" {
+  description = "Create an AWS Budget for the account. Set false if the account already has one."
+  type        = bool
+  default     = true
+}
+
 variable "budget_limit_usd" {
   description = "Monthly AWS Budget limit for this account."
   type        = number
@@ -70,8 +76,13 @@ variable "budget_limit_usd" {
 }
 
 variable "budget_alert_email" {
-  description = "Email notified at 50/80/100% of the budget."
+  description = "Email notified at 50/80/100% of the budget (required when create_budget = true)."
   type        = string
+  default     = ""
+  validation {
+    condition     = !var.create_budget || can(regex("@", var.budget_alert_email))
+    error_message = "budget_alert_email is required when create_budget is true."
+  }
 }
 
 variable "enable_guardduty" {

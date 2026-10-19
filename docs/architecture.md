@@ -72,7 +72,7 @@ flowchart LR
       rds[("RDS PostgreSQL 16<br/>encrypted, PITR, optional Multi-AZ")]
     end
   end
-  eks["EKS 1.34 control plane<br/>api/audit logs → CloudWatch"] --- ng
+  eks["EKS 1.35 control plane<br/>api/audit logs → CloudWatch"] --- ng
   ng -->|SG: 5432 from nodes only| rds
   ng -->|Pod Identity: put/get only| s3b[("S3 backups<br/>versioned, TLS-only, 7-day lifecycle")]
   ecr["ECR<br/>immutable tags, scan on push"] --> ng

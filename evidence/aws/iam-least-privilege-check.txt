@@ -1,0 +1,8 @@
+# EKS Pod Identity least-privilege check, 2026-10-19T22:05:45Z
+# kubectl run with serviceAccountName=postgres-backup, image datareliability-backup:1.0.2
+identity: arn:aws:sts::<account-id>:assumed-role/datareliability-lab-backup/eks-datareliab-iam-check-32d5e4d6-514c-4017-8bc3-587a42e12d8b
+list: 2 objects
+delete:
+delete failed: s3://datareliability-lab-backups-<account-id>/postgres/customers/20261019T220501Z.dump An error occurred (AccessDenied) when calling the DeleteObject operation: User: arn:aws:sts::<account-id>:assumed-role/datareliability-lab-backup/eks-datareliab-iam-check-32d5e4d6-514c-4017-8bc3-587a42e12d8b is not authorized to perform: s3:DeleteObject on resource: "arn:aws:s3:::datareliability-lab-backups-<account-id>/postgres/customers/20261019T220501Z.dump" because no identity-based policy allows the s3:DeleteObject action
+other-prefix write:
+upload failed: - to s3://datareliability-lab-backups-<account-id>/evil.txt An error occurred (AccessDenied) when calling the PutObject operation: User: arn:aws:sts::<account-id>:assumed-role/datareliability-lab-backup/eks-datareliab-iam-check-32d5e4d6-514c-4017-8bc3-587a42e12d8b is not authorized to perform: s3:PutObject on resource: "arn:aws:s3:::datareliability-lab-backups-<account-id>/evil.txt" because no identity-based policy allows the s3:PutObject action

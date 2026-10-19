@@ -2,13 +2,15 @@
 
 A small customer-records API (FastAPI + PostgreSQL on Kubernetes) used as a test subject for
 reliability engineering: **SLOs with burn-rate alerting, five injected production failures,
-a measured disaster-recovery drill, and blameless post-incident reviews written from recorded
-evidence.** Terraform for the AWS version (EKS, RDS, S3) is included and validated.
+two measured disaster-recovery drills, and blameless post-incident reviews written from recorded
+evidence.** Built locally on kind, then deployed to AWS (EKS, RDS, S3) with Terraform for an RDS
+point-in-time-restore drill, and torn down afterwards.
 
 > **Scope, stated plainly.** This is a personal lab, not production experience. The application is a
 > stand-in for an enterprise data-management SaaS. The architecture is simplified, and it is **not** a
 > model of any company's internal platform. The SLO targets are lab targets. Every number below was
-> measured on a local kind cluster on 2026-10-19 and links to its raw evidence file.
+> measured on 2026-10-19 (scenarios and DR 001 on a local kind cluster, DR 002 on AWS) and links to
+> its raw evidence file.
 
 ## Results at a glance
 
@@ -20,6 +22,7 @@ evidence.** Terraform for the AWS version (EKS, RDS, S3) is included and validat
 | [04](docs/incidents/2026-10-19-scenario-04-bad-release.md) | Release with SQL/schema mismatch | `APIAvailabilityFastBurn` | 39 s | ~3 min, creates only | 1.5% | Readiness ≠ correctness. Found and **fixed** misleading error classification and dropped requests on rollout; re-ran to verify |
 | [05](docs/incidents/2026-10-19-scenario-05-node-failure.md) | Worker node killed | none needed (self-healed) | — | ~50 s of partial errors | ≤ 0.02% | One replica for **5 min → 30 s** after tuning eviction; impact depends on the client's connection model; **no rebalancing after recovery** |
 | [DR](docs/dr/dr-drill-001-results.md) | DB StatefulSet **and volume** deleted | `APIAvailabilityFastBurn` | 45 s | 81 s | 0.5% | **RTO 92 s / RPO 216 s, both met, RPO by timing not design.** Found **0-byte "backups"** left by failed jobs |
+| [DR 002 · AWS](docs/dr/dr-drill-002-rds-pitr-results.md) | `DELETE` of 166,721 customers on healthy **RDS** | **nothing**: availability stayed 100% | — | wrong data for 15 min | — | **RDS PITR: recovered in 15 min 52 s, 100% of pre-incident data**; 2,372 later inserts reconciled, 101 updates lost; backups shrank 17% and nobody noticed |
 
 ¹ Time from impact to first page/alert. ² Share of the 30-day availability error budget (99.9% at the nominal 10 rps = 25,920 failed requests), from Prometheus counters.
 
@@ -55,14 +58,15 @@ flowchart LR
 
 Full design, placement decisions, health model and the AWS mapping: [docs/architecture.md](docs/architecture.md).
 
-| Layer | Local (Milestone 1, $0) | AWS (Milestone 2, Terraform) |
+| Layer | Local (Milestone 1, $0) | AWS (Milestone 2, [deployed and drilled](docs/aws-deployment.md)) |
 |---|---|---|
-| Kubernetes | kind 1.35, 1 control plane + 2 workers | EKS 1.34, managed node group (Spot), IMDSv2 hop 1 |
+| Kubernetes | kind 1.35, 1 control plane + 2 workers | EKS 1.35, managed node group (Spot, 2 AZs), IMDSv2 hop 1 |
 | Database | PostgreSQL 16 StatefulSet | RDS PostgreSQL 16, encrypted, PITR, Secrets Manager password |
 | Backups | `pg_dump` → SeaweedFS (S3 API) | `pg_dump` → S3 (same script) + RDS automated backups |
 | Delivery | Helm chart | Helm + ECR (immutable tags, scan on push) |
 | Observability | kube-prometheus-stack, SLO rules chart, Grafana dashboard | same, plus CloudWatch control-plane logs |
-| Guardrails | — | AWS Budget ($20, 50/80/100% + forecast), GuardDuty (opt-in) |
+| Guardrails | — | AWS Budget (optional; account already had a $20 cap), GuardDuty (opt-in) |
+| Identity | static keys for the local S3 store | EKS Pod Identity; backup role **verified unable to delete** backups |
 
 ## SLOs
 
@@ -89,6 +93,17 @@ python lab.py verify-backup       # restore newest backup into a scratch DB and 
 python lab.py down                # delete everything (add --keep-backups to keep the object store volume)
 ```
 
+AWS (billable, about $0.21/hour; see [Cost](#cost)):
+
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars   # set admin_cidrs, budget options
+terraform -chdir=terraform init -backend-config="bucket=<state-bucket>" -backend-config="region=us-east-2"
+terraform -chdir=terraform apply
+python lab_aws.py deploy && python lab_aws.py seed 1000000
+python lab_aws.py pitr-drill      # DR Drill 002
+python lab_aws.py cleanup-restored && terraform -chdir=terraform destroy   # restored instance is outside TF state
+```
+
 | | URL |
 |---|---|
 | API docs | http://127.0.0.1:30080/docs |
@@ -106,6 +121,7 @@ charts/datareliability-observability/  SLO recording rules, burn-rate alerts, Gr
 k8s/                       kind config, PostgreSQL, backup CronJob, loadgen
 terraform/                 AWS: VPC, EKS, RDS, S3, ECR, Pod Identity, Budget, GuardDuty
 lab.py                     lab driver: up/down, scenarios, DR drill, evidence recorder
+lab_aws.py                 AWS driver: ECR push, deploy to EKS, PITR drill, cleanup
 scripts/                   PromQL helpers for incident numbers
 evidence/                  raw JSON timelines from every run
 docs/                      architecture, SLOs, scenarios, runbooks, incidents, DR, ADRs, security
@@ -120,6 +136,7 @@ docs/                      architecture, SLOs, scenarios, runbooks, incidents, D
   [disaster recovery](docs/runbooks/disaster-recovery.md)
 - **Post-incident reviews:** [docs/incidents/](docs/incidents/) ([template](docs/incidents/TEMPLATE.md))
 - **Hypotheses written before running:** [docs/scenarios.md](docs/scenarios.md)
+- **AWS deployment, annotated screenshots:** [docs/aws-deployment.md](docs/aws-deployment.md)
 - **Decisions:** [ADR 001 local-first](docs/adr/001-local-first.md) ·
   [ADR 002 dumps vs PITR](docs/adr/002-logical-backups-and-pitr.md) ·
   [ADR 003 single NAT](docs/adr/003-single-nat-gateway.md)
@@ -129,12 +146,24 @@ docs/                      architecture, SLOs, scenarios, runbooks, incidents, D
 
 Milestone 1 runs entirely on a laptop: **$0**. The AWS stack is built to live for hours, not months:
 one NAT gateway, Spot nodes, `db.t4g.micro`, no deletion protection, `force_destroy` on buckets and
-registries. An AWS Budget with email alerts is part of the stack. **Not yet applied.** Milestone 2
-will run the RDS point-in-time-restore drill and an AZ failover, then destroy and verify $0.
+registries.
+
+**Milestone 2 session, 2026-10-19:** `terraform apply` 21:46 UTC → `terraform destroy` complete
+23:14 UTC (**1 h 28 min**). Estimated at **≈ $0.60–0.90**: EKS $0.10/h, NAT ≈ $0.05/h plus image-pull
+data, 2 Spot nodes ≈ $0.03/h, RDS ≈ $0.02/h (two instances for ~50 min during the drill), CloudWatch
+ingestion. *This is an estimate. Cost Explorer lags by about a day.*
+
+Teardown verification (us-east-2, after destroy): no EKS clusters, EC2 instances, volumes, ENIs, NAT
+gateways, Elastic IPs, load balancers, RDS instances, snapshots or automated backups, ECR repositories
+or secrets; only the default VPC remains. Two things `destroy` does not cover were handled by hand: the
+drill's restored RDS instance (outside Terraform state; `lab_aws.py cleanup-restored`) and the RDS
+PostgreSQL log group (created by RDS, not Terraform). Kept on purpose: the Terraform state bucket.
+The EKS KMS key is in its mandatory deletion waiting period.
 
 ## Roadmap
 
 - [x] **Milestone 1:** local lab, SLOs, 5 scenarios, DR drill, reports, fixes re-verified
-- [ ] **Milestone 2:** AWS apply → DR Drill 002 (RDS PITR, measured `LatestRestorableTime`) → Multi-AZ failover → destroy, $0 verified
+- [x] **Milestone 2:** AWS apply → DR Drill 002 (RDS PITR after a bad DELETE) → least-privilege check → destroy, teardown verified
+- [ ] Multi-AZ failover drill (skipped in the first AWS session to keep it short)
 - [ ] **Milestone 3:** GitOps delivery with post-deploy SLO gate and auto-rollback; WAL archiving;
       memory-headroom alert; auth-failure alert; human-run (unscripted) DR drill

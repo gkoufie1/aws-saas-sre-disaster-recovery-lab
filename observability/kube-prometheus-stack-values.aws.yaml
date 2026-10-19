@@ -1,0 +1,23 @@
+# EKS overlay for kube-prometheus-stack-values.yaml (pass both with -f, this one last).
+# EKS has no schedulable control-plane node, so the local lab's pinning of
+# monitoring to the control plane is removed (null deletes the inherited key).
+# Services are ClusterIP; reach them with `python lab_aws.py forward`.
+prometheus:
+  service: { type: ClusterIP, nodePort: null }
+  prometheusSpec:
+    nodeSelector: null
+    tolerations: null
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector: null
+    tolerations: null
+grafana:
+  service: { type: ClusterIP, nodePort: null }
+  nodeSelector: null
+  tolerations: null
+prometheusOperator:
+  nodeSelector: null
+  tolerations: null
+kube-state-metrics:
+  nodeSelector: null
+  tolerations: null
